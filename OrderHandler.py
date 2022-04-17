@@ -3,6 +3,7 @@ import  pandas as pd
 import re
 import os
 import sys
+import yaml
 
 def newRow(oIndex, product, quantity, consignee, phoneNo, addr, addr_abbr, sortkey):
     return {'跟团号': oIndex, '商品': product, '数量': quantity, '收货人': consignee, '联系电话': phoneNo, '地址': addr_abbr, '备注':'', '详细地址': addr, '排序键':sortkey}
@@ -65,6 +66,13 @@ OutputDirPath = os.path.abspath(sys.argv[3])
 print("Order dir: ", OrderFileDir)
 print("Risk address file:", RiskAddrFilePath)
 print("Output dir:", OutputDirPath)
+
+with open('config.yml', 'r') as file:
+    configuration = yaml.safe_load(file)
+
+print(configuration)
+for group in configuration['groups']:
+	print(group['name'])
 
 existOutputDir = os.path.isdir(OutputDirPath)
 if not existOutputDir:
@@ -130,27 +138,27 @@ for orderFile in orderFiles:
 				sortkey = int(''.join([addr_tokens[1], addr_tokens[2]]))
 			else :
 				orders_err.append(newRow(indexes[i], products[i], quantities[i], consignees[i], phoneNos[i], addr,'', sortkey))
-				counter_err += 1
+				counter_err += int(quantities[i])
 				continue
 
 			if isRisk:
 				orders_risk.append(newRow(indexes[i], products[i], quantities[i],consignees[i], phoneNos[i], addr, addr_abb, sortkey))
-				counter_risk += 1
+				counter_risk += int(quantities[i])
 			elif addr_tokens[0] == '363':
 				orders_363.append(newRow(indexes[i], products[i], quantities[i],consignees[i], phoneNos[i], addr, addr_abb, sortkey))
-				counter_363 += 1
+				counter_363 += int(quantities[i])
 			elif addr_tokens[0] == '828':
 				orders_828.append(newRow(indexes[i], products[i], quantities[i],consignees[i], phoneNos[i], addr,addr_abb, sortkey))
-				counter_828 += 1
+				counter_828 += int(quantities[i])
 			elif addr_tokens[0] == '1280':
 				orders_1280.append(newRow(indexes[i], products[i], quantities[i],consignees[i], phoneNos[i], addr,addr_abb, sortkey))
-				counter_1280 += 1
+				counter_1280 += int(quantities[i])
 			else :
 				orders_err.append(newRow(indexes[i], products[i], quantities[i],consignees[i], phoneNos[i], addr, '', sortkey))
-				counter_err += 1
+				counter_err += int(quantities[i])
 		else:
 			orders_err.append(newRow(indexes[i], products[i], quantities[i], consignees[i], phoneNos[i], addr,'', sortkey))
-			counter_err += 1
+			counter_err += int(quantities[i])
 	
 	orders_summary.append({'商品': '', '描述': '363弄', '数量': counter_363})
 	orders_summary.append({'商品': '', '描述': '828弄', '数量': counter_828})
