@@ -2,6 +2,7 @@ import datetime
 import  pandas as pd
 import re
 import os
+import sys
 
 def newRow(oIndex, product, quantity, consignee, phoneNo, addr, addr_abbr, sortkey):
     return {'跟团号': oIndex, '商品': product, '数量': quantity, '收货人': consignee, '联系电话': phoneNo, '地址': addr_abbr, '备注':'', '详细地址': addr, '排序键':sortkey}
@@ -56,22 +57,34 @@ def writeSummarySheet(writer, data, sheetName):
 		worksheet.set_row( i+1, 22)
 
 # ----------------------------------------
-#  Load blocked building info
-# ---------------------------------------- 
-riskAddrs = []
-riskAddrFile = pd.read_excel('C:\\Users\\Leon\\Desktop\\cpc\\团购订单\\封控楼栋简表.xlsx')
-riskBlocks = riskAddrFile['弄']
-riskBuildings = riskAddrFile['楼栋']
-for i in range(len(riskBlocks)):
-	riskAddrs.append('-'.join([str(riskBlocks[i]), str(riskBuildings[i])]))
+# Arguments
+# ----------------------------------------
+OrderFileDir = os.path.abspath(sys.argv[1])
+RiskAddrFilePath = os.path.abspath(sys.argv[2])
+OutputDirPath = os.path.abspath(sys.argv[3])
+print("Order dir: ", OrderFileDir)
+print("Risk address file:", RiskAddrFilePath)
+print("Output dir:", OutputDirPath)
 
+existOutputDir = os.path.isdir(OutputDirPath)
+if not existOutputDir:
+	os.mkdir(OutputDirPath)
 
 # ----------------------------------------
 #  Load order files
 # ----------------------------------------
-OrderFileDir = 'C:\\Users\\Leon\\Desktop\\cpc\\团购订单\\0417'
-OutputFileName = '团购配送单_{0}.xlsx'.format(datetime.datetime.now().strftime('%Y-%m-%d'))
-OutputFilePath = 'C:\\Users\\Leon\\Desktop\\cpc\\团购订单\\0417\\{0}'.format(OutputFileName)
+OutputFileName = '配送单_{0}.xlsx'.format(datetime.datetime.now().strftime('%Y-%m-%d'))
+OutputFilePath = os.path.join(OutputDirPath, OutputFileName)
+
+# ----------------------------------------
+#  Load risky building info
+# ---------------------------------------- 
+riskAddrs = []
+riskAddrFile = pd.read_excel(RiskAddrFilePath)
+riskBlocks = riskAddrFile['弄']
+riskBuildings = riskAddrFile['楼栋']
+for i in range(len(riskBlocks)):
+	riskAddrs.append('-'.join([str(riskBlocks[i]), str(riskBuildings[i])]))
 
 orders_363 = []
 orders_828 = []
